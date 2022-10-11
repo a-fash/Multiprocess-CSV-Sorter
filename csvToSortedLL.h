@@ -1,6 +1,6 @@
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "mergeSort.h"
 
 char *stringTitles[] = {"color", "director_name", "actor_2_name", "genres", "actor_1_name", "movie_title", "actor_3_name", "plot_keywords", "movie_imdb_link", "language", "country", "content_rating"};
@@ -56,7 +56,7 @@ int csvToSortedLinkedList( Node **head, char *path, char *column)
 	//check correct number of commas
 
 	int sct = sortColumnType(column);
-	int lineCheck ;
+	int lineCheck;
 	int lineNumber = 0;
 
 	//read lines of file
@@ -70,22 +70,22 @@ int csvToSortedLinkedList( Node **head, char *path, char *column)
 
 		switch(sct)
 		{
+
 			case 1:
-				push(head, getData(buffer, columnNumber), sizeof(int), buffer, (strlen(buffer)*sizeof(char)));
+				push(head, getData(buffer, columnNumber), sizeof(char), buffer, (strlen(buffer)*sizeof(char)));
 				break;
 			case 2: ;
 				char *temp = getData(buffer, columnNumber);
-				if(strcmp(temp, "NULL") == 0)
-				{
-					push(head, temp, sizeof(int), buffer, (strlen(buffer)*sizeof(char)));
+				if(strcmp(temp, "NULL") == 0) {
+					push(head, temp, sizeof(char), buffer, (strlen(buffer)*sizeof(char)));
 					break;
-				} else
+				} else 
 				{
 					int *num = (int *)malloc(sizeof(int));
 					*num = atoi(temp);
 					free(temp);
 					push(head, num, sizeof(int), buffer, (strlen(buffer)*sizeof(char)));
-					break;
+				break;
 				}
 		}
 	}
@@ -99,7 +99,7 @@ int csvToSortedLinkedList( Node **head, char *path, char *column)
 
 		case -2:
 			free(header);
-                        fprintf(stderr, "ERROR: File '%s' is missing closing '\"' on line %d\n", path, lineNumber+1);
+			fprintf(stderr, "ERROR: File '%s' is missing closing '\"' on line %d\n", path, lineNumber+1);
 			return -5;
 	}
 
@@ -173,48 +173,33 @@ void * getData(char *line, int columnNumber)
 	data = strcpy(data, line);
 
 	char *ptr = data;
-	char *doubleQuote = strchr(ptr, '"');
 
-	if(doubleQuote != NULL)
+	for(i = 0; i < columnNumber; i++)
 	{
-		for(i = 0; i < columnNumber; i++)
+		if(ptr[0] == '"')
 		{
-			if(strlen(doubleQuote) >= strlen(ptr))
-			{
-				doubleQuote = strchr(++doubleQuote, '"');
-				ptr = strchr(doubleQuote, ',');
-				doubleQuote = strchr(ptr, '"');
-				ptr++;
-			} else
-			{
-				ptr = strchr(ptr, ',');
-				ptr++;
-			}
-		}
-	} else
-	{
-		for(i = 0; i < columnNumber; i++)
-		{
-			ptr = strchr(ptr, ',');
 			ptr++;
+			ptr = strchr(ptr, '"');
 		}
+		ptr = strchr(ptr, ',');
+		ptr++;
+
 	}
 
-	int dataLen;
+	int dataLen = 0;
 
-	if(doubleQuote != NULL)
+	if(ptr[0] == '"')
 	{
-		if(strlen(doubleQuote) == strlen(ptr))
-		{
-			doubleQuote++;
-			doubleQuote = strchr(doubleQuote, '"');
-			dataLen = strlen(ptr) - strlen(doubleQuote);
-		}
+		ptr++;
+		dataLen = strcspn(ptr, "\"");
+		dataLen++;
 	} else
+	{
 		dataLen = strcspn(ptr, ",");
+	}
 
 	char *a = (char *)malloc(sizeof(char) * (dataLen + NULLTERMINATOR) );
-	a = strncpy(a, ptr, dataLen+NULLTERMINATOR);
+	a = strncpy(a, ptr, dataLen + NULLTERMINATOR);
 
 	a[dataLen] = '\0';
 
@@ -225,55 +210,55 @@ void * getData(char *line, int columnNumber)
 
 // returns the number of the column name from the given header starting from 0
 // returns -1 if column not found
-int getColumnNumber(char *header, char *columnName)
-{
+int getColumnNumber(char *header, char *columnName){
+
 	int i;
 	int numOfColumns = (int)sizeof(stringTitles)/(int)sizeof(stringTitles[0]) + (int)sizeof(numericTitles)/(int)sizeof(numericTitles[0]);
 	char *data;
 	char *ptr = header;
 
 	for(i = 0; i < numOfColumns; i++){
-
+		
 		data = (char *)getData(ptr, 0);
 
-		if(strcmp(data, columnName) == 0)
-		{
+		if(strcmp(data, columnName) == 0){
 			free(data);
 			return i;
-		} else
-		{
+		} else {
 			ptr = ptr+strlen(data)+1;
 			free(data);
 		}
 	}
+
 	//column not found
 	return -1;
 }
 
-// reads a single line from the given open file ptr
 char *readLine(FILE *file)
 {
-	int linePos = 0;
-	int dataPos = 0;
-	int lineBufferSize = 100;
-	int dataBufferSize = 50;
-	char ch;
+        int linePos = 0;
+        int dataPos = 0;
+        int lineBufferSize = 100;
+        int dataBufferSize = 50;
+        char ch;
 
-	char *line = (char *)malloc(sizeof(char) * lineBufferSize );
-	char *data = (char *)malloc(sizeof(char) * dataBufferSize );
-
+        char *line = (char *)malloc(sizeof(char) * lineBufferSize );
+        char *data = (char *)malloc(sizeof(char) * dataBufferSize );
+	
 	strcpy(line, "\0");
 
-	ch = getc(file);
+        ch = getc(file);
 
-	if(feof(file))
-	{
-		free(line);
-		free(data);
-		return NULL;
-	} else
-		data[dataPos++] = ch;
-
+        if(feof(file))
+        {
+                free(line);
+                free(data);
+                return NULL;
+        } else
+        {
+                //line[linePos++] = ch;
+                data[dataPos++] = ch;
+        }
 	if(ch == ',')
 	{
 		strcat(line, "NULL,");
@@ -281,22 +266,25 @@ char *readLine(FILE *file)
 		data[--dataPos] = '\0';
 	}
 
-	do
-	{
+        do
+        {
 		ch = getc(file);
+		//line[linePos++] = ch;
 		data[dataPos++] = ch;
 
-		if( (linePos+dataPos+6) > lineBufferSize)
-		{
-			lineBufferSize *= 2;
-			line = (char *)realloc(line, sizeof(char) * lineBufferSize );
-		}
-		if( (dataPos) == dataBufferSize)
-		{
-			dataBufferSize *= 2;
-			data = (char *)realloc(data, sizeof(char) * dataBufferSize );
-		}
+                if( (linePos+dataPos+6) > lineBufferSize)
+                {
+                	//printf("LinePos: %d\t DataPos: %d\t %d\n", linePos, dataPos, linePos+dataPos+6);
+		        lineBufferSize *= 2;
+                        line = (char *)realloc(line, (sizeof(char) * lineBufferSize) );
+                }
+                if( (dataPos) == dataBufferSize)
+                {
+                        dataBufferSize *= 2;
+                        data = (char *)realloc(data, sizeof(char) * dataBufferSize );
+                }
 
+		//line[linePos] = '\0';
 		data[dataPos] = '\0';
 
 		if(ch == ',' || ch == '\r')
@@ -306,6 +294,7 @@ char *readLine(FILE *file)
 
 			if(temp == NULL)
 			{
+				//printf("%d -> %s\n", linePos, line);
 				strcat(line, "NULL");
 				linePos += 5;
 			} else
@@ -322,18 +311,17 @@ char *readLine(FILE *file)
 				strcat(line, ",");
 				linePos += 1;
 			}
-
 			dataPos = 0;
 			data[dataPos+1] = '\0';
 		}
 
 	} while(ch != '\n' && !feof(file));
 
-        char *final = (char *)malloc(sizeof(char) * (strlen(line) + NULLTERMINATOR) );
-        strcpy(final, line);
+	char *final = (char *)malloc(sizeof(char) * (strlen(line) + NULLTERMINATOR) );
+	strcpy(final, line);
 
-        free(data);
-        free(line);
+	free(data);
+	free(line);
 
         return final;
 }
@@ -341,57 +329,22 @@ char *readLine(FILE *file)
 int commaCheck(char *line)
 {
 	char *ptr = line;
-	char *doubleQuote = strchr(line, '"');
+	//char *doubleQuote = strchr(line, '"');
 	int totalColumns = (int)sizeof(stringTitles)/(int)sizeof(stringTitles[0]) + (int)sizeof(numericTitles)/(int)sizeof(numericTitles[0]);
 	int lineCommas = 0;
 
-	if(strchr(ptr, '"') != NULL)
+	while(ptr != NULL)
 	{
-		do
+		if(ptr[0] == '"')
 		{
-			if(doubleQuote != NULL)
-			{
-				if(strlen(doubleQuote) >= strlen(ptr))
-				{
-					doubleQuote = strchr(++doubleQuote, '"');
-					if(doubleQuote == NULL)
-						return -2;
-
-					ptr = strchr(doubleQuote, ',');
-					if(ptr == NULL)
-					{
-						lineCommas++;
-						break;
-					}
-					doubleQuote = strchr(ptr, '"');
-					ptr++;
-					lineCommas++;
-				} else
-				{
-					ptr = strchr(ptr, ',');
-					ptr++;
-					lineCommas++;
-				}
-			} else
-			{
-				ptr = strchr(ptr, ',');
-				if(ptr == NULL)
-				{
-					lineCommas++;
-					break;
-				}
-				ptr++;
-				lineCommas++;
-			}
-		} while(ptr != NULL);
-	} else
-	{
-		while( (ptr = strchr(ptr, ',')) != NULL)
-		{
-			lineCommas++;
 			ptr++;
+			ptr = strchr(ptr, '"');
 		}
+		ptr = strchr(ptr, ',');
 		lineCommas++;
+		if(ptr == NULL)
+			break;
+		ptr++;
 	}
 
 	if(lineCommas == totalColumns)
