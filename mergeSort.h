@@ -13,30 +13,33 @@ Node * sortedMerge(Node *a, Node *b, int (*comparatorFnPtr)(void*, void*));
 void frontBackSplit(Node *source, Node **front, Node **head);
 int comparator_INT(void *data0, void *data1);
 int comparator_STR(void *data0, void *data);
+void printList(Node *);
 
-void mergeSort(struct Node ** headRef, int (*comparatorFnPtr)(void*, void*))
+void mergeSort(Node **headRef, int (*comparatorFnPtr)(void*, void*))
 {
 	Node *head = *headRef;
 	Node *a;
 	Node *b;
-	
+
 	if((head == NULL) || (head->next == NULL))
 	{
 		return;
 	}
 
 	frontBackSplit(head, &a, &b);
-	
+
 	mergeSort(&a, comparatorFnPtr);
 	mergeSort(&b, comparatorFnPtr);
 
 	*headRef = sortedMerge(a, b, comparatorFnPtr);
+
+	return;
 }
 
 Node * sortedMerge(Node *a, Node *b, int (comparatorFnPtr)(void*, void*))
 {
 	Node *result = NULL;
-	
+
 	if(a == NULL)
 		return(b);
 
@@ -44,7 +47,7 @@ Node * sortedMerge(Node *a, Node *b, int (comparatorFnPtr)(void*, void*))
 		return(a);
 
 	int outcome = comparatorFnPtr(a->data, b->data);
-	
+
 	if(outcome >= 0)
 	{
 		result = a;
@@ -84,51 +87,75 @@ void frontBackSplit(Node *source, Node **front, Node **back)
 void push(Node **headRef, void *data, size_t data_size, char *line, size_t line_size)
 {
 	Node *newNode = (Node *)malloc(sizeof(Node));
-	
-	newNode->data = malloc(data_size);
-	newNode->line = malloc(line_size);
+
+	newNode->data = data;
+
+	newNode->line = line;
+
 	newNode->next = (*headRef);
 
-	int i;
-	for(i=0; i<data_size; i++)
-		*(char *)(newNode->data +i) = *(char *)(data + i);
+	if(*headRef == NULL)
+		newNode->next = NULL;
+	else
+		newNode->next = (*headRef);
 
-	newNode->line = strcpy(newNode->line, line);
-		
 	(*headRef) = newNode;
 }
 
 void printList(Node *head)
 {
-	Node *ptr = NULL;
-	
-	while(head != NULL)
+	Node *ptr = head;
+
+	while(ptr != NULL)
 	{
-		printf("%s\n", head->line);
-		ptr = head->next;
-		head = ptr;
-		
+		printf("%s\n", (char *)ptr->line);
+		ptr = ptr->next;
 	}
 }
 
 void freeList(Node *head)
 {
-	Node *ptr = head;	
+	Node *ptr = head;
+	Node *trail = head;
 	while(ptr !=NULL)
 	{
-		ptr = head->next;
-		free(head);
-		head = ptr;
+		free(ptr->data);
+		free(ptr->line);
+		ptr = ptr->next;
+		free(trail);
+		trail = ptr;
 	}
 }
 
 
 int comparator_INT(void *data0, void *data1)
 {
-	return *((int*)data1) - *((int*)data0);
+	if( strcmp((char *) data0, "NULL") == 0 || strcmp((char *)data1, "NULL") == 0)
+	{
+		if(strcmp((char *)data0, "NULL") == 0 && strcmp((char *)data1, "NULL") == 0)
+			return comparator_STR(data0, data1);
+
+		if(strcmp((char *)data0, "NULL") == 0)
+			return comparator_STR(data0, data1);
+
+		if(strcmp((char *)data1, "NULL") == 0)
+			return comparator_STR(data0, data1);
+
+	}
+
+	return *((int *)data1) - *((int *)data0);
 }
 
 int comparator_STR(void *data0, void *data1)
 {
+	if( strcmp((char *) data0, (char *) data1) == 0)
+		return -1;
+
+	if( strcmp((char *) data0, "NULL") == 0 )
+		return 1;
+
+	if( strcmp((char *) data1, "NULL") == 0 )
+		return -1;
+
 	return strcmp((char *)data1, (char *)data0);
 }
