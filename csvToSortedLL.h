@@ -19,6 +19,9 @@ void mergeSort(Node **, int (*comparatorFnPtr)(void*, void*));
 void printList(Node *);
 
 extern int NULLTERMINATOR;
+extern int LINEBUFFER;
+extern int DATABUFFER;
+
 
 int csvToSortedLinkedList( Node **head, char *path, char *column)
 {
@@ -238,8 +241,8 @@ char *readLine(FILE *file)
 {
         int linePos = 0;
         int dataPos = 0;
-        int lineBufferSize = 100;
-        int dataBufferSize = 50;
+        int lineBufferSize = LINEBUFFER;
+        int dataBufferSize = DATABUFFER;
         char ch;
 
         char *line = (char *)malloc(sizeof(char) * lineBufferSize );

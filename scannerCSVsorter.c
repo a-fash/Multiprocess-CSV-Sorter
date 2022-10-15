@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "directoryAndFile.h"
 
 char *sortColumn;
@@ -13,20 +15,46 @@ int hasSortColumn;
 int hasSortDirectory;
 int hasOutputDirectory;
 
+int scannerCSVrunner(int, char *[]);
 void freeData();
 int procCount(char *);
+int timeResultHandler(double);
 
 int sortColumnType(char *);
 
 int NULLTERMINATOR = 1;
 
+int LINEBUFFER;
+int DATABUFFER;
+
 int main(int argc, char *argv[])
 {
-	clock_t start, end;
-	double diff;
+	int i,j,k;
+	for(i = 8; i <= 512; i=i*2)
+	{
+		LINEBUFFER = i;
+		for(j = 8; j <= 128; j=j*2)
+		{
+			DATABUFFER = j;
+			for(k = 0; k < 100; k++)
+			{
+				printf("%d - Line %d - Data %d\n", k, i, j);
+				scannerCSVrunner(argc, argv);
+			}
+		}
+	}
 
+	return 0;
+}
+
+int scannerCSVrunner(int argc, char *argv[])
+{
+
+	clock_t start;
 	start = clock();
 
+	struct timeval s;
+	gettimeofday(&s, NULL);
 
 	int maxFileAndDirectories = 255;
 	int maxPIDlength = 5;
@@ -153,13 +181,45 @@ int main(int argc, char *argv[])
 
         fprintf(stdout,	"Total number of processes: %d\n", procCount(childProcs));
 
-	end = clock();
-	diff = (double)(end - start) / CLOCKS_PER_SEC;
+	clock_t end = clock();
 
-	fprintf(stdout,	"Time taken %f\n", diff);
+	struct timeval e;
+	gettimeofday(&e, NULL);
+
+	double diff = (double)(end - start) / CLOCKS_PER_SEC;
+
+	double d = (double) (e.tv_usec - s.tv_usec) / 1000000 +(double) (e.tv_sec - s.tv_sec);
+
+	fprintf(stdout, "CPU Time taken %f\n", diff);
+	fprintf(stdout, "USER Time taken %f\n", d);
+
+	timeResultHandler(diff);
 
 	free(childProcs);
 	freeData();
+
+	return 0;
+}
+
+int timeResultHandler(double timeTaken)
+{
+	DIR *rp;
+	rp = opendir("result");
+
+	if(rp == NULL)
+		mkdir("result", 0700);
+	else
+		closedir(rp);
+
+	char resultName[50];
+
+	sprintf(resultName, "result/result-L%d-D%d.txt", LINEBUFFER, DATABUFFER); 
+
+	FILE *result = fopen(resultName, "a+");
+
+	fprintf(result, "%f\n", timeTaken);
+
+        fclose(result);
 
 	return 0;
 }
